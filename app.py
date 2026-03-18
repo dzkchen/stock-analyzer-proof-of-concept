@@ -15,7 +15,6 @@ from ui.layout import (
 def run_app() -> None:
     ticker, user_exchange = render_header()
 
-    # Initialize button state and last-analyzed values.
     if "analyze_clicked" not in st.session_state:
         st.session_state.analyze_clicked = False
     if "last_ticker" not in st.session_state:
@@ -23,8 +22,6 @@ def run_app() -> None:
     if "last_exchange" not in st.session_state:
         st.session_state.last_exchange = ""
 
-    # If the user changes the ticker or exchange after a prior run, reset
-    # the analyze flag so we do not auto-analyze on each keystroke.
     if (
         ticker != st.session_state.last_ticker
         or user_exchange != st.session_state.last_exchange
@@ -49,8 +46,6 @@ def run_app() -> None:
         st.error("Unable to compute any scores for this ticker. Please try again.")
         return
 
-    # Record the last analyzed inputs and clear the analyze flag so that
-    # subsequent edits do not automatically re-trigger analysis.
     st.session_state.last_ticker = ticker
     st.session_state.last_exchange = user_exchange
     st.session_state.analyze_clicked = False

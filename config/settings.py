@@ -18,6 +18,8 @@ class APISettings:
 
     gemini_api_key: Optional[str]
     news_api_key: Optional[str]
+    gemini_enabled: bool
+    news_enabled: bool
 
 
 @dataclass(frozen=True)
@@ -35,13 +37,18 @@ class Settings:
 
 
 def _build_settings() -> Settings:
-    gemini_key = os.getenv("GEMINII_API_KEY") or os.getenv("GEMINI_API_KEY")
-    news_key = os.getenv("NEWSS_API_KEY") or os.getenv("NEWS_API_KEY")
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    news_key = os.getenv("NEWS_API_KEY")
+
+    gemini_enabled = bool(gemini_key)
+    news_enabled = bool(news_key)
 
     return Settings(
         api=APISettings(
             gemini_api_key=gemini_key,
             news_api_key=news_key,
+            gemini_enabled=gemini_enabled,
+            news_enabled=news_enabled,
         ),
         market_data=MarketDataSettings(),
     )
