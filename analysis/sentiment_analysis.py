@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
+from core.context import CompanyContext
 from data.social_data import RedditPost, NewsArticle, grab_news, pull_reddit_feed
 from services.finbert_client import FinBertClient
 from services.gemini_client import GeminiClient, GeminiSummaryRequest
@@ -34,18 +35,12 @@ def _extract_news_texts(articles: List[NewsArticle]) -> List[str]:
 
 
 def calculate_average_sentiment_scores(
-    ticker: str,
-    company_query: str | None = None,
-    company_display_name: str | None = None,
-    exchange: str | None = None,
+    company: CompanyContext,
     top_k_for_summary: int = 5,
 ) -> SentimentScores:
-    """
-    sentiment scoring and summary generation.
-    """
-    reddit_posts = pull_reddit_feed(ticker, exchange=exchange)
-    news_query = company_query or ticker
-    news_articles = grab_news(news_query)
+
+    reddit_posts = pull_reddit_feed(company.ticker, exchange=company.exchange or None)
+    news_articles = grab_news(company.news_query)
 
     reddit_texts = _extract_reddit_texts(reddit_posts)
     news_texts = _extract_news_texts(news_articles)
@@ -73,10 +68,10 @@ def calculate_average_sentiment_scores(
     if top_reddit_snippets or top_news_snippets:
         gemini = GeminiClient()
         summary_request = GeminiSummaryRequest(
-            ticker=ticker,
+            ticker=company.ticker,
             reddit_snippets=top_reddit_snippets,
             news_snippets=top_news_snippets,
-            display_name=company_display_name,
+            display_name=company.display_name or None,
         )
         summary_text = gemini.summarize_sentiment(summary_request)
     else:

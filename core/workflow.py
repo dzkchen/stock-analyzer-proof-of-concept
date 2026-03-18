@@ -6,21 +6,17 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from analysis.fundamental_analysis import FundamentalResult, score_fundamentals
-from analysis.scoring import CompositeAIScore, calculate_composite_score, extract_latest_technical_score
+from analysis.scoring import (
+    CompositeAIScore,
+    calculate_composite_score,
+    extract_latest_technical_score,
+)
 from analysis.sentiment_analysis import SentimentScores, calculate_average_sentiment_scores
 from analysis.technical_analysis import add_technical_score
+from core.context import CompanyContext, build_company_context
 from data.market_data import fetch_daily_history, fetch_fundamentals
 from data.social_data import NewsArticle, RedditPost, grab_news, pull_reddit_feed
 from services.gemini_client import FundamentalAuditRequest, GeminiClient
-
-
-@dataclass(frozen=True)
-class CompanyContext:
-    ticker: str
-    exchange: str
-    company_name: str
-    display_name: str
-    news_query: str
 
 
 @dataclass(frozen=True)
@@ -39,50 +35,7 @@ class AnalysisResult:
     had_any_scores: bool
 
 
-def _build_company_context(
-    ticker: str,
-    fundamentals_raw: Dict[str, Any] | None,
-    user_exchange: str | None,
-) -> CompanyContext:
-    info = (fundamentals_raw or {}).get("info", {}) or {}
-
-    company_name = info.get("shortName") or info.get("longName") or ""
-
-    yf_exchange = info.get("exchange") or info.get("fullExchangeName") or ""
-    exchange = user_exchange if user_exchange and user_exchange != "OTHER" else yf_exchange
-
-    if company_name and exchange:
-        display_name = f"{company_name} ({exchange}: {ticker})"
-    elif company_name:
-        display_name = f"{company_name} ({ticker})"
-    else:
-        display_name = ticker
-
-    if company_name:
-        ticker_terms = [ticker]
-        if exchange:
-            ticker_terms.append(f"{exchange}: {ticker}")
-        ticker_clause = " OR ".join(ticker_terms)
-        news_query = f'"{company_name}" AND ({ticker_clause})'
-    elif exchange:
-        news_query = f"{exchange}: {ticker}"
-    else:
-        news_query = ticker
-
-    return CompanyContext(
-        ticker=ticker,
-        exchange=exchange,
-        company_name=company_name,
-        display_name=display_name,
-        news_query=news_query,
-    )
-
-
 def run_full_analysis(ticker: str, user_exchange: str | None = None) -> AnalysisResult:
-    """
-    Orchestrate the full analysis pipeline for a given ticker and exchange.
-    This is UI-agnostic and intended to be called from Streamlit or other frontends.
-    """
     price_df: Optional[pd.DataFrame] = None
     technical_df: Optional[pd.DataFrame] = None
     technical_score: Optional[float] = None
@@ -150,7 +103,11 @@ def run_full_analysis(ticker: str, user_exchange: str | None = None) -> Analysis
             )
         else:
             gemini = GeminiClient()
-            ctx = _build_company_context(ticker=ticker, fundamentals_raw=fundamentals_raw, user_exchange=user_exchange)
+            ctx = build_company_context(
+                ticker=ticker,
+                fundamentals_raw=fundamentals_raw,
+                user_exchange=user_exchange,
+            )
             audit_request = FundamentalAuditRequest(
                 ticker=ticker,
                 summary_text=fundamentals_text,
@@ -162,19 +119,14 @@ def run_full_analysis(ticker: str, user_exchange: str | None = None) -> Analysis
         fundamental_audit_text = ""
         fundamental_stats = {}
 
-    company_ctx = _build_company_context(
+    company_ctx = build_company_context(
         ticker=ticker,
         fundamentals_raw=fundamentals_raw,
         user_exchange=user_exchange,
     )
 
     try:
-        sentiment_scores = calculate_average_sentiment_scores(
-            ticker,
-            company_query=company_ctx.news_query,
-            company_display_name=company_ctx.display_name,
-            exchange=company_ctx.exchange or None,
-        )
+        sentiment_scores = calculate_average_sentiment_scores(company=company_ctx)
     except Exception:
         sentiment_scores = None
 
