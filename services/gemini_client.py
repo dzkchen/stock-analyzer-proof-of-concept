@@ -16,12 +16,14 @@ class GeminiSummaryRequest:
     ticker: str
     reddit_snippets: List[str]
     news_snippets: List[str]
+    display_name: str | None = None
 
 
 @dataclass(frozen=True)
 class FundamentalAuditRequest:
     ticker: str
     summary_text: str
+    display_name: str | None = None
 
 
 class GeminiClient:
@@ -39,12 +41,30 @@ class GeminiClient:
 
     @staticmethod
     def _build_prompt(request: GeminiSummaryRequest) -> str:
+        ticker = request.ticker.upper()
+        display_name = request.display_name or f"{ticker} stock"
+
         system_prompt = (
-            "You are a financial analyst. Read the following recent news and Reddit "
-            "discussions about {ticker}. Write a concise, one paragraph summary "
-            "explaining the primary reasons behind the current retail and media sentiment."
+            "You are a financial analyst specializing in equities. The ticker symbol "
+            "{ticker} refers to the publicly traded company {display_name}. Treat all "
+            "mentions of {ticker} strictly as this stock ticker and ignore any "
+            "non-financial meanings (for example, military or political acronyms). "
+            "Read the following recent news and Reddit discussions about {display_name}. "
+            "Write a concise, one paragraph summary explaining the primary reasons "
+            "behind the current retail and media sentiment."
         )
-        parts: List[str] = [system_prompt.format(ticker=request.ticker), ""]
+
+        disambiguation_note = ""
+        if ticker == "POW":
+            disambiguation_note = (
+                "\n\nImportant: In this context, POW refers to Power Corporation of "
+                "Canada (TSE: POW), not 'prisoners of war' or any other meaning."
+            )
+
+        header = system_prompt.format(ticker=ticker, display_name=display_name)
+        header = f"{header}{disambiguation_note}"
+
+        parts: List[str] = [header, ""]
 
         if request.reddit_snippets:
             parts.append("Reddit posts:")
@@ -76,13 +96,30 @@ class GeminiClient:
         """
         Gemini to make response audit of company based on fundamental data
         """
-        system_prompt = (
-            "Act as a strict financial auditor. Review the following financial "
-            "information for {ticker}. Write a concise, one-paragraph summary "
-            "of the company's balance sheet health, cash runway, and valuation risks."
-        ).format(ticker=request.ticker)
+        ticker = request.ticker.upper()
+        display_name = request.display_name or f"{ticker} stock"
 
-        prompt = f"{system_prompt}\n\nFinancial summary:\n{request.summary_text}\n\nAudit:"
+        system_prompt = (
+            "Act as a strict financial auditor for publicly traded equities. Review "
+            "the following financial information for {display_name}, whose ticker "
+            "symbol is {ticker}. Treat all mentions of {ticker} strictly as this "
+            "stock ticker and ignore any non-financial meanings (for example, "
+            "military or political acronyms). Write a concise, one-paragraph "
+            "summary of the company's balance sheet health, cash runway, and "
+            "valuation risks."
+        )
+
+        disambiguation_note = ""
+        if ticker == "POW":
+            disambiguation_note = (
+                "\n\nImportant: In this context, POW refers to Power Corporation of "
+                "Canada (TSE: POW), not 'prisoners of war' or any other meaning."
+            )
+
+        header = system_prompt.format(ticker=ticker, display_name=display_name)
+        header = f"{header}{disambiguation_note}"
+
+        prompt = f"{header}\n\nFinancial summary:\n{request.summary_text}\n\nAudit:"
 
         response = self._client.models.generate_content(
             model=self._model_name,

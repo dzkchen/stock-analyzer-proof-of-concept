@@ -36,6 +36,7 @@ def _extract_news_texts(articles: List[NewsArticle]) -> List[str]:
 def calculate_average_sentiment_scores(
     ticker: str,
     company_query: str | None = None,
+    company_display_name: str | None = None,
     top_k_for_summary: int = 5,
 ) -> SentimentScores:
     """
@@ -61,6 +62,7 @@ def calculate_average_sentiment_scores(
         ticker=ticker,
         reddit_snippets=top_reddit_snippets,
         news_snippets=top_news_snippets,
+        display_name=company_display_name,
     )
     summary_text = gemini.summarize_sentiment(summary_request)
 

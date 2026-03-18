@@ -71,9 +71,20 @@ def run_app() -> None:
                 "volume": info.get("volume"),
             }
 
+            company_name = info.get("shortName") or info.get("longName") or ""
+            exchange = info.get("exchange") or info.get("fullExchangeName") or ""
+
+            if company_name and exchange:
+                company_display_name = f"{company_name} ({exchange}: {ticker})"
+            elif company_name:
+                company_display_name = f"{company_name} ({ticker})"
+            else:
+                company_display_name = ticker
+
             r = fundamental_result.ratios
             summary_lines = [
                 f"Ticker: {ticker}",
+                f"Company: {company_name or company_display_name}",
                 f"Forward P/E: {r.get('forward_pe', 'N/A')}",
                 f"Debt/Equity: {r.get('debt_to_equity', 'N/A')}",
                 f"Current Ratio: {r.get('current_ratio', 'N/A')}",
@@ -87,6 +98,7 @@ def run_app() -> None:
             audit_request = FundamentalAuditRequest(
                 ticker=ticker,
                 summary_text=fundamentals_text,
+                display_name=company_display_name,
             )
             fundamental_audit_text = gemini.generate_fundamental_audit(audit_request)
         except Exception as exc:
@@ -94,9 +106,14 @@ def run_app() -> None:
             fundamental_result = None
             fundamental_audit_text = ""
             fundamental_stats = None
+            company_display_name = ticker
 
         try:
-            sentiment_scores = calculate_average_sentiment_scores(ticker)
+            sentiment_scores = calculate_average_sentiment_scores(
+                ticker,
+                company_query=company_display_name,
+                company_display_name=company_display_name,
+            )
         except Exception as exc:
             st.error(f"Failed to compute sentiment scores: {exc}")
 
