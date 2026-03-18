@@ -33,6 +33,7 @@ class NewsArticle:
 
 def pull_reddit_feed(
     ticker: str,
+    exchange: str | None = None,
     limit_per_subreddit: int = 50,
 ) -> List[RedditPost]:
     """
@@ -46,11 +47,21 @@ def pull_reddit_feed(
     }
 
     posts: List[RedditPost] = []
+    ticker_upper = ticker.upper()
+    terms = [
+        f"${ticker_upper}",
+        f'"{ticker_upper} stock"',
+        f'"{ticker_upper} shares"',
+    ]
+    if exchange:
+        exch_upper = exchange.upper()
+        terms.append(f'"{exch_upper}: {ticker_upper}"')
+    search_query = " OR ".join(terms)
 
     for sub in REDDIT_SUBREDDITS:
         url = f"https://www.reddit.com/r/{sub}/search.json"
         params = {
-            "q": ticker,
+            "q": search_query,
             "restrict_sr": 1,
             "sort": "hot",
             "t": "week",
@@ -99,8 +110,19 @@ def grab_news(
     start = end - timedelta(days=days)
 
     url = "https://newsapi.org/v2/everything"
+
+    base = (query or "").strip()
+    if not base:
+        raise ValueError("query must be a non-empty string.")
+
+    finance_terms = (
+        "stock OR stocks OR shares OR \"share price\" OR \"stock price\" OR "
+        "earnings OR dividend OR \"market cap\" OR \"trading volume\" OR "
+        "NYSE OR NASDAQ OR TSX OR \"stock market\""
+    )
+    combined_query = f"({base}) AND ({finance_terms})"
     params = {
-        "q": query,
+        "q": combined_query,
         "from": start.date().isoformat(),
         "to": end.date().isoformat(),
         "language": "en",

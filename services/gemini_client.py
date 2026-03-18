@@ -54,15 +54,7 @@ class GeminiClient:
             "behind the current retail and media sentiment."
         )
 
-        disambiguation_note = ""
-        if ticker == "POW":
-            disambiguation_note = (
-                "\n\nImportant: In this context, POW refers to Power Corporation of "
-                "Canada (TSE: POW), not 'prisoners of war' or any other meaning."
-            )
-
         header = system_prompt.format(ticker=ticker, display_name=display_name)
-        header = f"{header}{disambiguation_note}"
 
         parts: List[str] = [header, ""]
 
@@ -104,20 +96,16 @@ class GeminiClient:
             "the following financial information for {display_name}, whose ticker "
             "symbol is {ticker}. Treat all mentions of {ticker} strictly as this "
             "stock ticker and ignore any non-financial meanings (for example, "
-            "military or political acronyms). Write a concise, one-paragraph "
-            "summary of the company's balance sheet health, cash runway, and "
-            "valuation risks."
+            "military or political acronyms). If only a minority of key metrics are "
+            "missing, still provide a normal audit and mention the gaps briefly. "
+            "Reserve strong language such as 'audit impossible' or 'data is "
+            "insufficient' only for cases where the majority of the core metrics "
+            "(leverage, liquidity, profitability, and cash flow) are absent. "
+            "Write a concise, one-paragraph summary of the company's balance sheet "
+            "health, cash runway, and valuation risks."
         )
 
-        disambiguation_note = ""
-        if ticker == "POW":
-            disambiguation_note = (
-                "\n\nImportant: In this context, POW refers to Power Corporation of "
-                "Canada (TSE: POW), not 'prisoners of war' or any other meaning."
-            )
-
         header = system_prompt.format(ticker=ticker, display_name=display_name)
-        header = f"{header}{disambiguation_note}"
 
         prompt = f"{header}\n\nFinancial summary:\n{request.summary_text}\n\nAudit:"
 

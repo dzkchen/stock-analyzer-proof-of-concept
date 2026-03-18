@@ -10,7 +10,7 @@ from data.social_data import NewsArticle, RedditPost
 from ui.charts import build_ai_score_gauge, build_price_chart
 
 
-def render_header() -> str:
+def render_header() -> tuple[str, str]:
     st.set_page_config(
         page_title="Stock Analyzer",
         layout="wide",
@@ -20,15 +20,25 @@ def render_header() -> str:
     st.caption("Quantitative technicals + qualitative sentiment, powered by LLMs.")
 
     with st.container():
-        cols = st.columns([3, 1])
+        cols = st.columns([2, 2])
         with cols[0]:
-            ticker = st.text_input("Stock Ticker", value="AAPL").upper().strip()
+            exchange = st.selectbox(
+                "Stock Exchange",
+                options=[
+                    "NASDAQ",
+                    "NYSE",
+                    "TSE",
+                    "TSXV",
+                    "AMEX",
+                    "LSE",
+                    "OTHER",
+                ],
+                index=0,
+            )
         with cols[1]:
-            st.write("")
-            st.write("")
-            st.write(" ")
+            ticker = st.text_input("Stock Ticker", value="AAPL").upper().strip()
 
-    return ticker
+    return ticker, exchange.upper().strip()
 
 
 def render_top_row(

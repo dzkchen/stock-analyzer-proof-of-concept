@@ -23,14 +23,27 @@ from ui.layout import (
 
 
 def run_app() -> None:
-    ticker = render_header()
+    ticker, user_exchange = render_header()
+
+    # Initialize button state and last-analyzed values.
+    if "analyze_clicked" not in st.session_state:
+        st.session_state.analyze_clicked = False
+    if "last_ticker" not in st.session_state:
+        st.session_state.last_ticker = ""
+    if "last_exchange" not in st.session_state:
+        st.session_state.last_exchange = ""
+
+    # If the user changes the ticker or exchange after a prior run, reset
+    # the analyze flag so we do not auto-analyze on each keystroke.
+    if (
+        ticker != st.session_state.last_ticker
+        or user_exchange != st.session_state.last_exchange
+    ):
+        st.session_state.analyze_clicked = False
 
     if not ticker:
         st.info("Enter a stock ticker above to begin.")
         return
-
-    if "analyze_clicked" not in st.session_state:
-        st.session_state.analyze_clicked = False
 
     analyze = st.button("Analyze")
     if analyze:
@@ -72,7 +85,11 @@ def run_app() -> None:
             }
 
             company_name = info.get("shortName") or info.get("longName") or ""
-            exchange = info.get("exchange") or info.get("fullExchangeName") or ""
+
+            # Prefer the user-selected exchange for downstream queries; fall back to
+            # what yfinance reports if the user left it unspecified or chose OTHER.
+            yf_exchange = info.get("exchange") or info.get("fullExchangeName") or ""
+            exchange = user_exchange if user_exchange and user_exchange != "OTHER" else yf_exchange
 
             if company_name and exchange:
                 company_display_name = f"{company_name} ({exchange}: {ticker})"
@@ -80,6 +97,20 @@ def run_app() -> None:
                 company_display_name = f"{company_name} ({ticker})"
             else:
                 company_display_name = ticker
+
+            # Build a news query that tightly targets this specific company:
+            # prefer the official company name plus an exchange-qualified ticker,
+            # and fall back to simpler forms when we have less information.
+            if company_name:
+                ticker_terms = [ticker]
+                if exchange:
+                    ticker_terms.append(f"{exchange}: {ticker}")
+                ticker_clause = " OR ".join(ticker_terms)
+                company_news_query = f'"{company_name}" AND ({ticker_clause})'
+            elif exchange:
+                company_news_query = f"{exchange}: {ticker}"
+            else:
+                company_news_query = ticker
 
             r = fundamental_result.ratios
             summary_lines = [
@@ -94,36 +125,62 @@ def run_app() -> None:
             ]
             fundamentals_text = "\n".join(str(line) for line in summary_lines)
 
-            gemini = GeminiClient()
-            audit_request = FundamentalAuditRequest(
-                ticker=ticker,
-                summary_text=fundamentals_text,
-                display_name=company_display_name,
+            # If all of the key ratios came back as N/A / missing, there is not
+            # enough fundamental information to justify an LLM audit. In that
+            # case, show a standard explanatory message instead of calling Gemini.
+            all_missing = all(
+                r.get(key) in (None, "N/A")
+                for key in (
+                    "forward_pe",
+                    "debt_to_equity",
+                    "current_ratio",
+                    "profit_margin",
+                    "operating_margin",
+                    "free_cash_flow",
+                )
             )
-            fundamental_audit_text = gemini.generate_fundamental_audit(audit_request)
+
+            if all_missing:
+                fundamental_audit_text = (
+                    "There is insufficient fundamental data available for this company "
+                    "to generate a meaningful audit. Key metrics such as P/E, "
+                    "Debt/Equity, Current Ratio, Profit Margin, Operating Margin, or "
+                    "Free Cash Flow are missing or reported as N/A."
+                )
+            else:
+                gemini = GeminiClient()
+                audit_request = FundamentalAuditRequest(
+                    ticker=ticker,
+                    summary_text=fundamentals_text,
+                    display_name=company_display_name,
+                )
+                fundamental_audit_text = gemini.generate_fundamental_audit(audit_request)
         except Exception as exc:
             st.error(f"Failed to compute fundamental analysis: {exc}")
             fundamental_result = None
             fundamental_audit_text = ""
             fundamental_stats = None
             company_display_name = ticker
+            exchange = user_exchange if user_exchange and user_exchange != "OTHER" else ""
+            company_news_query = f"{exchange}: {ticker}" if exchange else ticker
 
         try:
             sentiment_scores = calculate_average_sentiment_scores(
                 ticker,
-                company_query=company_display_name,
+                company_query=company_news_query,
                 company_display_name=company_display_name,
+                exchange=exchange or None,
             )
         except Exception as exc:
             st.error(f"Failed to compute sentiment scores: {exc}")
 
         try:
-            reddit_posts = pull_reddit_feed(ticker)
+            reddit_posts = pull_reddit_feed(ticker, exchange=exchange or None)
         except Exception:
             reddit_posts = []
 
         try:
-            news_articles = grab_news(ticker)
+            news_articles = grab_news(company_news_query)
         except Exception:
             news_articles = []
 
@@ -138,6 +195,12 @@ def run_app() -> None:
             sentiment=sentiment_scores,
             fundamental_score=fundamental_score,
         )
+
+    # Record the last analyzed inputs and clear the analyze flag so that
+    # subsequent edits do not automatically re-trigger analysis.
+    st.session_state.last_ticker = ticker
+    st.session_state.last_exchange = user_exchange
+    st.session_state.analyze_clicked = False
 
     if sentiment_scores is not None:
         render_top_row(composite, sentiment_scores)
