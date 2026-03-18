@@ -12,8 +12,7 @@ into a single composite score for any stock ticker. It also generates LLM‑powe
 **NOTE: THIS IS A PROTOTYPE MEANT FOR AN APPLICATION, IN NO WAYS IS IT A COMPLETE OR FLESHED OUT PROJECT BUT RATHER A PROOF OF CONCEPT.**
 
 ![Project Image 1](images/Screenshot_One.png) ![Project Image 2](images/Screenshot_Two.png)
-![Project Image 3](images/Screenshot_Three.png) ![Project Image 4](images/Screenshot_Four.png)
-![Project Image 5](images/Screenshot_Five.png)
+![Project Image 3](images/Screenshot_Three.png) 
 
 ### Main features
 
