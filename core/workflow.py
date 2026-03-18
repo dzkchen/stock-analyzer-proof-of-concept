@@ -80,19 +80,30 @@ def run_full_analysis(ticker: str, user_exchange: str | None = None) -> Analysis
             f"Operating Margin: {r.get('operating_margin', 'N/A')}",
             f"Free Cash Flow: {r.get('free_cash_flow', 'N/A')}",
         ]
-        fundamentals_text = "\n".join(str(line) for line in summary_lines)
 
-        all_missing = all(
-            r.get(key) in (None, "N/A")
-            for key in (
-                "forward_pe",
-                "debt_to_equity",
-                "current_ratio",
-                "profit_margin",
-                "operating_margin",
-                "free_cash_flow",
-            )
+        required_keys = (
+            "forward_pe",
+            "debt_to_equity",
+            "current_ratio",
+            "profit_margin",
+            "operating_margin",
+            "free_cash_flow",
         )
+        missing_keys = [key for key in required_keys if r.get(key) in (None, "N/A")]
+
+        fundamentals_text = "\n".join(str(line) for line in summary_lines)
+        if missing_keys:
+            missing_lines = [
+                "",
+                "Missing or N/A metrics:",
+                *[f"- {key}" for key in missing_keys],
+                "",
+                "When forming your audit, focus on the metrics that are present "
+                "and then clearly note the impact of any missing metrics listed above.",
+            ]
+            fundamentals_text = "\n".join([fundamentals_text, *missing_lines])
+
+        all_missing = len(missing_keys) == len(required_keys)
 
         if all_missing:
             fundamental_audit_text = (
