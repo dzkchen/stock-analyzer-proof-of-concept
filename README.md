@@ -81,6 +81,7 @@ For full integration into apps such as Wealthsimple, it should be positioned as 
     - Fine tune how the scoring works, adding more factors to take into consideration for equation
     - Not use Streamlit (Django or Flask in the future)
     - Error with certain stocks like POW (doesn't actually look at the stock...)
+    - HF_Token usage (no more rate limiting pls)
 - Add:
     - Options Data + Earnings suprises for trends
     - More graphs !!!
