@@ -14,6 +14,7 @@ from analysis.scoring import (
 from analysis.sentiment_analysis import SentimentScores, calculate_average_sentiment_scores
 from analysis.technical_analysis import add_technical_score
 from core.context import CompanyContext, build_company_context
+from config.settings import ScoringSettings
 from data.market_data import fetch_daily_history, fetch_fundamentals
 from data.social_data import NewsArticle, RedditPost, grab_news, pull_reddit_feed
 from services.gemini_client import FundamentalAuditRequest, GeminiClient
@@ -35,7 +36,11 @@ class AnalysisResult:
     had_any_scores: bool
 
 
-def run_full_analysis(ticker: str, user_exchange: str | None = None) -> AnalysisResult:
+def run_full_analysis(
+    ticker: str,
+    user_exchange: str | None = None,
+    weights: ScoringSettings | None = None,
+) -> AnalysisResult:
     price_df: Optional[pd.DataFrame] = None
     technical_df: Optional[pd.DataFrame] = None
     technical_score: Optional[float] = None
@@ -161,6 +166,7 @@ def run_full_analysis(ticker: str, user_exchange: str | None = None) -> Analysis
             technical_score=technical_score,
             sentiment=sentiment_scores,
             fundamental_score=fundamental_score,
+            weights=weights,
         )
         had_any_scores = True
 

@@ -5,6 +5,8 @@ from typing import Iterable, List
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, TextClassificationPipeline
 
+from config.settings import settings
+
 
 FINBERT_MODEL_NAME = "ProsusAI/finbert"
 
@@ -33,10 +35,10 @@ class FinBertClient:
     def _label_to_numeric(label: str) -> float:
         normalized = label.lower()
         if "positive" in normalized:
-            return 100.0
+            return settings.sentiment_mapping.positive_score
         if "negative" in normalized:
-            return 0.0
-        return 50.0
+            return settings.sentiment_mapping.negative_score
+        return settings.sentiment_mapping.neutral_score
 
     def score_texts(self, texts: Iterable[str]) -> List[FinBertResult]:
         cleaned = [t for t in (text.strip() for text in texts) if t]

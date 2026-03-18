@@ -7,21 +7,11 @@ import math
 import pandas as pd
 
 from analysis.sentiment_analysis import SentimentScores
-
-
-TECHNICAL_WEIGHT = 0.40
-FUNDAMENTAL_WEIGHT = 0.30
-NEWS_WEIGHT = 0.20
-REDDIT_WEIGHT = 0.10
+from config.settings import ScoringSettings, settings
 
 
 @dataclass(frozen=True)
 class CompositeAIScore:
-    """
-    Container for the component scores and final overall AI Score.
-    All scores are in range [0, 100].
-    """
-
     technical_score: float
     fundamental_score: float
     news_score: float
@@ -60,33 +50,32 @@ def compute_overall_ai_score(
     technical_score: Optional[float],
     sentiment: Optional[SentimentScores],
     fundamental_score: Optional[float] = None,
+    weights: Optional[ScoringSettings] = None,
 ) -> CompositeAIScore:
     """
-    Calculate the final Overall AI Score (0–100) using the weights:
-      - 40% Technical Indicators 
-      - 30% Fundamental 
-      - 20% News Sentiment 
-      - 10% Reddit Sentiment 
+    Calculate the final Overall AI Score (0–100) using configurable weights.
 
     Missing/invalid component scores:
-      - Missing - excluded from the weighted sum
+      - Missing: excluded from the weighted sum
         and the remaining weights renormalized
-      - If all components are missing - neutral 50.0
+      - If all components are missing: neutral 50 score
     """
     tech = _sanitize_score(technical_score)
     fundamental = _sanitize_score(fundamental_score)
     news = _sanitize_score(sentiment.news_score) if sentiment is not None else None
     reddit = _sanitize_score(sentiment.reddit_score) if sentiment is not None else None
 
+    w = weights or settings.scoring
+
     components = []
     if tech is not None:
-        components.append(("technical", tech, TECHNICAL_WEIGHT))
+        components.append(("technical", tech, w.technical_weight))
     if fundamental is not None:
-        components.append(("fundamental", fundamental, FUNDAMENTAL_WEIGHT))
+        components.append(("fundamental", fundamental, w.fundamental_weight))
     if news is not None:
-        components.append(("news", news, NEWS_WEIGHT))
+        components.append(("news", news, w.news_weight))
     if reddit is not None:
-        components.append(("reddit", reddit, REDDIT_WEIGHT))
+        components.append(("reddit", reddit, w.reddit_weight))
 
     if not components:
         overall = 50.0
@@ -113,6 +102,7 @@ def calculate_composite_score(
     technical_score: Optional[float],
     sentiment: Optional[SentimentScores],
     fundamental_score: Optional[float] = None,
+    weights: Optional[ScoringSettings] = None,
 ) -> CompositeAIScore:
     """
     Alias for compute_overall_ai_score to align with project terminology.
@@ -121,5 +111,6 @@ def calculate_composite_score(
         technical_score=technical_score,
         sentiment=sentiment,
         fundamental_score=fundamental_score,
+        weights=weights,
     )
 

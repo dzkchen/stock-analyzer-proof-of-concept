@@ -14,8 +14,6 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 @dataclass(frozen=True)
 class APISettings:
-    """API keys"""
-
     gemini_api_key: Optional[str]
     news_api_key: Optional[str]
     gemini_enabled: bool
@@ -24,16 +22,31 @@ class APISettings:
 
 @dataclass(frozen=True)
 class MarketDataSettings:
-    """Market data config"""
-
     default_period: str = "3mo"
     default_interval: str = "1d"
+
+
+@dataclass(frozen=True)
+class ScoringSettings:
+    technical_weight: float = 0.40
+    fundamental_weight: float = 0.30
+    news_weight: float = 0.20
+    reddit_weight: float = 0.10
+
+
+@dataclass(frozen=True)
+class SentimentMappingSettings:
+    positive_score: float = 100.0
+    neutral_score: float = 50.0
+    negative_score: float = 0.0
 
 
 @dataclass(frozen=True)
 class Settings:
     api: APISettings
     market_data: MarketDataSettings
+    scoring: ScoringSettings
+    sentiment_mapping: SentimentMappingSettings
 
 
 def _build_settings() -> Settings:
@@ -51,6 +64,8 @@ def _build_settings() -> Settings:
             news_enabled=news_enabled,
         ),
         market_data=MarketDataSettings(),
+        scoring=ScoringSettings(),
+        sentiment_mapping=SentimentMappingSettings(),
     )
 
 

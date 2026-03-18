@@ -28,7 +28,7 @@ class FundamentalAuditRequest:
 
 class GeminiClient:
     """
-    I love AI Wrappers! Wrapper for Google GenAI SDK to generate a qualitative sentiment summary.
+    I love AI Wrappers! Wrapper for Google GenAI SDK to generate a qualitative sentiment summary :)
     """
 
     def __init__(self, model_name: str = GEMINI_MODEL_NAME) -> None:
