@@ -61,7 +61,11 @@ def render_middle_row(
     composite: CompositeAIScore,
 ) -> None:
     st.subheader("Price & Sentiment Overview")
-    fig = build_price_chart(df_with_scores, composite_score=composite)
+    try:
+        fig = build_price_chart(df_with_scores, composite_score=composite)
+    except Exception as exc:
+        st.warning(f"Unable to render price chart: {exc}")
+        return
     st.plotly_chart(fig, use_container_width=True)
 
 

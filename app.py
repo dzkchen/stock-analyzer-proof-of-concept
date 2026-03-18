@@ -21,7 +21,8 @@ def run_app() -> None:
         st.session_state.last_result = None
 
     default_weights = settings.scoring
-    st.sidebar.subheader("AI Score Weights")
+
+    st.sidebar.subheader("AI Score Weights (sum capped at 1.0)")
     technical_weight = st.sidebar.slider(
         "Technical weight",
         min_value=0.0,
@@ -51,11 +52,28 @@ def run_app() -> None:
         step=0.05,
     )
 
+    raw_weights = {
+        "technical": technical_weight,
+        "fundamental": fundamental_weight,
+        "news": news_weight,
+        "reddit": reddit_weight,
+    }
+
+    total_weight = sum(raw_weights.values())
+    if total_weight > 1.0:
+        st.error(
+            "The sum of AI score weights exceeds 1.0. "
+            "Please reduce one or more weights before running the analysis."
+        )
+        analyze_enabled = False
+    else:
+        analyze_enabled = True
+
     scoring_weights = ScoringSettings(
-        technical_weight=technical_weight,
-        fundamental_weight=fundamental_weight,
-        news_weight=news_weight,
-        reddit_weight=reddit_weight,
+        technical_weight=raw_weights["technical"],
+        fundamental_weight=raw_weights["fundamental"],
+        news_weight=raw_weights["news"],
+        reddit_weight=raw_weights["reddit"],
     )
 
     if "analyze_clicked" not in st.session_state:
@@ -75,7 +93,7 @@ def run_app() -> None:
         st.info("Enter a stock ticker above to begin.")
         return
 
-    analyze = st.button("Analyze")
+    analyze = st.button("Analyze", disabled=not analyze_enabled)
     if analyze:
         st.session_state.analyze_clicked = True
 
