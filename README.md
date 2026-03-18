@@ -25,7 +25,7 @@ into a single composite score for any stock ticker. It also generates LLM‑powe
 
 ### Demo
 
-[Demo Video](images/terribledemovideo.mp4)
+[Demo Video](https://drive.google.com/file/d/1Kc2UD02eIR0hGFIuV4ZXV0GJMQQk9KEh/view?usp=drive_link)
 
 ### How to run it yourself
 
