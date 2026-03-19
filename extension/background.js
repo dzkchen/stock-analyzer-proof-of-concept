@@ -1,7 +1,7 @@
 const latestTickerByTab = new Map();
 const manualTickerByTab = new Map();
 
-function buildDefaultPayload(url = "") {
+function blankTickerState(url = "") {
   return {
     ticker: "",
     source: "none",
@@ -10,7 +10,7 @@ function buildDefaultPayload(url = "") {
   };
 }
 
-function mergeWithManualOverride(tabId, basePayload, tabUrl) {
+function applyManualTicker(tabId, basePayload, tabUrl) {
   const manualTicker = manualTickerByTab.get(tabId);
   if (manualTicker) {
     return {
@@ -23,21 +23,21 @@ function mergeWithManualOverride(tabId, basePayload, tabUrl) {
   }
 
   return {
-    ...(basePayload || buildDefaultPayload(tabUrl || "")),
+    ...(basePayload || blankTickerState(tabUrl || "")),
     url: tabUrl || basePayload?.url || "",
     hasManualOverride: false,
   };
 }
 
-function getCachedTickerPayload(tabId, tabUrl) {
-  const cached = latestTickerByTab.get(tabId) || buildDefaultPayload(tabUrl || "");
-  return mergeWithManualOverride(tabId, cached, tabUrl);
+function resolveTickerPayload(tabId, tabUrl) {
+  const cached = latestTickerByTab.get(tabId) || blankTickerState(tabUrl || "");
+  return applyManualTicker(tabId, cached, tabUrl);
 }
 
 function fetchLiveTickerFromTab(tabId, tabUrl, callback) {
   chrome.tabs.sendMessage(tabId, { type: "EXTRACT_TICKER_NOW" }, (response) => {
     if (chrome.runtime.lastError) {
-      callback(getCachedTickerPayload(tabId, tabUrl));
+      callback(resolveTickerPayload(tabId, tabUrl));
       return;
     }
 
@@ -51,11 +51,11 @@ function fetchLiveTickerFromTab(tabId, tabUrl, callback) {
 
     if (ticker) {
       latestTickerByTab.set(tabId, payload);
-      callback(getCachedTickerPayload(tabId, tabUrl));
+      callback(resolveTickerPayload(tabId, tabUrl));
       return;
     }
 
-    callback(getCachedTickerPayload(tabId, tabUrl));
+    callback(resolveTickerPayload(tabId, tabUrl));
   });
 }
 

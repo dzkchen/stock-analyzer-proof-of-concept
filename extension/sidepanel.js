@@ -40,12 +40,12 @@ function renderTicker(payload) {
     "tickerMeta",
     ticker
       ? `Source: ${source} | Confidence: ${confidence}${hasManualOverride ? " | Manual override active" : ""}`
-      : "No ticker detected automatically. Use manual override below."
+      : "No ticker found. Use manual override."
   );
-  setText("statusText", url ? `Active page: ${url}` : "No active page URL available.");
+  setText("statusText", url ? `Page: ${url}` : "No active page.");
 }
 
-function renderScoreBars(scores = {}) {
+function drawScoreRows(scores = {}) {
   const container = document.getElementById("scoreBars");
   if (!container) {
     return;
@@ -72,7 +72,7 @@ function renderScoreBars(scores = {}) {
     .join("");
 }
 
-function renderSources(listId, items, mapItem) {
+function fillSourceList(listId, items, mapItem) {
   const list = document.getElementById(listId);
   if (!list) {
     return;
@@ -92,7 +92,7 @@ function renderAnalysis(data) {
   const scores = data?.scores || {};
   const overall = clampScore(scores.overall);
   setText("overallScore", `${overall.toFixed(1)} / 100`);
-  renderScoreBars(scores);
+  drawScoreRows(scores);
 
   setText(
     "sentimentSummary",
@@ -103,7 +103,7 @@ function renderAnalysis(data) {
     data?.fundamental_audit_text || "No fundamental audit available for this ticker.",
   );
 
-  renderSources("redditSources", data?.sources?.reddit, (item) => {
+  fillSourceList("redditSources", data?.sources?.reddit, (item) => {
     const title = escapeHtml(item?.title || "Reddit thread");
     const subreddit = escapeHtml(item?.subreddit || "reddit");
     const url = escapeHtml(item?.url || "#");
@@ -111,7 +111,7 @@ function renderAnalysis(data) {
     return `<li>[r/${subreddit}] <a href="${url}" target="_blank" rel="noreferrer noopener">${title}</a> (${ups} upvotes)</li>`;
   });
 
-  renderSources("newsSources", data?.sources?.news, (item) => {
+  fillSourceList("newsSources", data?.sources?.news, (item) => {
     const title = escapeHtml(item?.title || "News article");
     const source = escapeHtml(item?.source || "source");
     const url = escapeHtml(item?.url || "#");
@@ -153,13 +153,13 @@ async function fetchAnalysis(ticker, exchange = "NASDAQ") {
   return resp.json();
 }
 
-async function refreshAndAnalyze() {
-  setText("statusText", "Refreshing active tab context...");
+async function runAnalysis() {
+  setText("statusText", "Refreshing tab...");
   const ctx = await getTickerContext();
   const ticker = normalizedTicker(ctx?.ticker);
 
   if (!ticker) {
-    setText("statusText", "No ticker detected. Set manual override, then refresh.");
+    setText("statusText", "No ticker. Set one, then refresh.");
     return;
   }
 
@@ -167,11 +167,11 @@ async function refreshAndAnalyze() {
   try {
     const data = await fetchAnalysis(ticker, "NASDAQ");
     renderAnalysis(data);
-    setText("statusText", `Analysis loaded for ${ticker}.`);
+    setText("statusText", `${ticker} loaded.`);
   } catch (error) {
     setText(
       "statusText",
-      `API error: ${error.message}. Ensure backend is running on ${API_BASE}.`,
+      `API error: ${error.message}. Check ${API_BASE}.`,
     );
   }
 }
@@ -192,7 +192,7 @@ async function onSetManualTicker() {
       return;
     }
     setText("statusText", `Manual ticker set to ${ticker}.`);
-    await refreshAndAnalyze();
+    await runAnalysis();
   } catch (error) {
     setText("statusText", `Extension error: ${error.message}`);
   }
@@ -205,8 +205,8 @@ async function onClearManualTicker() {
       setText("statusText", response.error || "Unable to clear manual ticker.");
       return;
     }
-    setText("statusText", "Manual ticker override cleared.");
-    await refreshAndAnalyze();
+    setText("statusText", "Manual override cleared.");
+    await runAnalysis();
   } catch (error) {
     setText("statusText", `Extension error: ${error.message}`);
   }
@@ -222,7 +222,7 @@ function bindEvents() {
   clearBtn?.addEventListener("click", onClearManualTicker);
   refreshBtn?.addEventListener("click", async () => {
     try {
-      await refreshAndAnalyze();
+      await runAnalysis();
     } catch (error) {
       setText("statusText", `Extension error: ${error.message}`);
     }
@@ -235,4 +235,4 @@ function bindEvents() {
 }
 
 bindEvents();
-refreshAndAnalyze();
+runAnalysis();

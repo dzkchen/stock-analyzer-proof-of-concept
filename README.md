@@ -3,7 +3,7 @@ AI Stock Analyzer Proof of Concept
 
 ### What this project does
 
-This Stock Analyzer combines:
+This project analyzes a stock using:
 - quantitative technical indicators,
 - fundamental balance‑sheet and valuation metrics, and
 - qualitative sentiment from Reddit and financial news,
@@ -51,7 +51,7 @@ The project now supports two interfaces:
    NEWS_API_KEY=""
    ```
 
-4. **Run the local analysis API (required for extension)**
+4. **Run the local API** (needed for the extension)
    ```bash
    uvicorn api.server:app --reload --port 8000
    ```
@@ -66,8 +66,8 @@ The project now supports two interfaces:
 1. Open Chrome and go to `chrome://extensions`.
 2. Enable Developer mode.
 3. Click Load unpacked and select the `extension/` folder.
-4. Open a supported stock page (only tested w/ Wealthsimple so far).
-5. Open the extension side panel and click Refresh + Analyze.
+4. Open a stock page (tested only on Wealthsimple).
+5. Open the extension side panel and click **Refresh**.
 
 The extension will:
 - detect the ticker from the active tab (with manual override available),
@@ -78,7 +78,7 @@ The extension will:
 
 This is an educational research prototype. It does not provide investment advice and does not execute trades.
 
-### What was taken into consideration
+### What I considered
 
 - **Financial perspective**
   - Technicals:
@@ -91,23 +91,22 @@ This is an educational research prototype. It does not provide investment advice
     - Profitability (profit and operating margins).
     - Valuation (forward P/E) and cash generation (free cash flow).
   - Sentiment:
-    - using news and reddit scores (seperate)
+    - News and Reddit sentiment scores (separate).
 
-### Integration with existing trading apps (e.g. Wealthsimple)
+### Integration with trading apps (e.g. Wealthsimple)
 
 This project is built as a standalone research and education tool, not as a replacement for a broker. It fits alongside apps like **Wealthsimple**, **Questrade**, or **Robinhood**.
 
-For full integration into apps such as Wealthsimple, it should be positioned as a companion analytics layer to reduce switching apps (increasing user retention) meant as a educational resource rather than advisory role. To monetize, companies should:
-    - Only allowing certain users such as card holders, premium users etc (In Wealthsimple's case)
+For deeper integration into apps like Wealthsimple, this should be positioned as a companion analytics layer that reduces context switching and improves retention, while staying educational (not advisory). A reasonable rollout would be to offer it to premium tiers first.
 
-### What’s next (future roadmap)
+### Next steps
 
 - Fix:
     - Using Reddit Dev feature directly rather than json requests, this way I stop getting rate limited (currently waiting approval)
     - Fine tune how the scoring works, adding more factors to take into consideration for equation
     - Not use Streamlit (Django or Flask in the future)
-    - Error with certain stocks like POW (doesn't actually look at the stock...)
-    - HF_Token usage (no more rate limiting pls)
+    - Fix edge cases for some symbols (e.g., POW).
+    - Improve token/rate-limit handling (HF_Token).
 - Add:
     - Options Data + Earnings suprises for trends
     - More graphs !!!
