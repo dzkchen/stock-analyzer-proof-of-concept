@@ -9,3 +9,5 @@ google-genai
 plotly
 python-dotenv
 requests
+fastapi
+uvicorn

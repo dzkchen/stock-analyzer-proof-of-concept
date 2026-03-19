@@ -101,6 +101,9 @@ class GeminiClient:
             "Reserve strong language such as 'audit impossible' or 'data is "
             "insufficient' only for cases where the majority of the core metrics "
             "(leverage, liquidity, profitability, and cash flow) are absent. "
+            "If any metric is marked missing, N/A, unavailable, or appears to be a "
+            "placeholder from data collection, treat it strictly as unknown data and "
+            "do not interpret it as financial weakness, distress, or deterioration. "
             "Write a concise, one-paragraph summary of the company's balance sheet "
             "health, cash runway, and valuation risks."
         )

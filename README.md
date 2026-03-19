@@ -3,11 +3,15 @@ AI Stock Analyzer Proof of Concept
 
 ### What this project does
 
-This Stock Analyzer is a Streamlit web app that combines:
+This Stock Analyzer combines:
 - quantitative technical indicators,
 - fundamental balance‑sheet and valuation metrics, and
 - qualitative sentiment from Reddit and financial news,
 into a single composite score for any stock ticker. It also generates LLM‑powered summaries for sentiment and fundamentals to explain the numbers.
+
+The project now supports two interfaces:
+- **Streamlit app** (`app.py`) for standalone analysis.
+- **Chrome side panel extension** (`extension/`) that reads the active stock page ticker and displays analysis by calling the local API (`api/server.py`).
 
 **NOTE: THIS IS A PROTOTYPE MEANT FOR AN APPLICATION, IN NO WAYS IS IT A COMPLETE OR FLESHED OUT PROJECT BUT RATHER A PROOF OF CONCEPT.**
 
@@ -48,10 +52,32 @@ into a single composite score for any stock ticker. It also generates LLM‑powe
    NEWS_API_KEY=""
    ```
 
-4. **Run the Streamlit app**
+4. **Run the local analysis API (required for extension)**
+   ```bash
+   uvicorn api.server:app --reload --port 8000
+   ```
+
+5. **Run the Streamlit app (optional standalone UI)**
    ```bash
    streamlit run app.py
    ```
+
+### Chrome extension side panel
+
+1. Open Chrome and go to `chrome://extensions`.
+2. Enable Developer mode.
+3. Click Load unpacked and select the `extension/` folder.
+4. Open a supported stock page (only tested w/ Wealthsimple so far).
+5. Open the extension side panel and click Refresh + Analyze.
+
+The extension will:
+- detect the ticker from the active tab (with manual override available),
+- call `http://localhost:8000/analyze`,
+- render AI score breakdown, sentiment summary, fundamental audit, and source links.
+
+### Important disclaimer
+
+This is an educational research prototype. It does not provide investment advice and does not execute trades.
 
 ### What was taken into consideration
 
@@ -92,6 +118,8 @@ For full integration into apps such as Wealthsimple, it should be positioned as 
 
 - Language: Python
 - UI: Streamlit
+- Extension UI: Chrome Extension (Manifest V3, HTML/CSS/JS)
+- Local API: FastAPI + Uvicorn
 - Market Data: yfinance
 - Technical Indicators: Pandas Ta
 - Social Data: Reddit JSON requests

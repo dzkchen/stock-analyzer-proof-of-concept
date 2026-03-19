@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Analyzer</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <header class="panel-header">
+        <h1>Stock Analyzer</h1>
+        <p class="subtle">Companion research view</p>
+      </header>
+
+      <section class="card">
+        <h2>Detected Ticker</h2>
+        <p id="tickerValue" class="ticker">--</p>
+        <p id="tickerMeta" class="subtle">Waiting for active tab context...</p>
+      </section>
+
+      <section class="card">
+        <h2>Manual Override</h2>
+        <div class="row">
+          <input
+            id="manualTickerInput"
+            type="text"
+            maxlength="6"
+            placeholder="e.g. AAPL"
+            aria-label="Manual ticker override"
+          />
+          <button id="setTickerBtn" type="button">Set</button>
+        </div>
+        <div class="row">
+          <button id="clearTickerBtn" type="button" class="secondary">Clear override</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Status</h2>
+        <p id="statusText">Ready.</p>
+        <div class="row">
+          <button id="refreshBtn" type="button" class="secondary">Refresh + Analyze</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>AI Scores</h2>
+        <p id="overallScore" class="score-value">-- / 100</p>
+        <div id="scoreBars" class="score-bars"></div>
+      </section>
+
+      <section class="card">
+        <h2>Market Sentiment Summary</h2>
+        <p id="sentimentSummary" class="body-text">No sentiment summary yet.</p>
+      </section>
+
+      <section class="card">
+        <h2>Fundamental Audit</h2>
+        <p id="fundamentalAudit" class="body-text">No fundamental audit yet.</p>
+      </section>
+
+      <section class="card">
+        <h2>Sources</h2>
+        <p class="subtle section-label">Reddit</p>
+        <ul id="redditSources" class="source-list"></ul>
+        <p class="subtle section-label">News</p>
+        <ul id="newsSources" class="source-list"></ul>
+      </section>
+
+      <section class="card disclaimer-card">
+        <p class="disclaimer-title">Disclaimer</p>
+        <p class="disclaimer-text">
+          Educational insights only. This demo does not provide investment advice or execute
+          trades.
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

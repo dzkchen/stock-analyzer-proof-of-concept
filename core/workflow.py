@@ -36,6 +36,17 @@ class AnalysisResult:
     had_any_scores: bool
 
 
+def _is_unavailable_metric(metric_name: str, value: Any) -> bool:
+    if value in (None, "", "N/A"):
+        return True
+    if metric_name == "free_cash_flow":
+        try:
+            return float(value) == 0.0
+        except (TypeError, ValueError):
+            return False
+    return False
+
+
 def run_full_analysis(
     ticker: str,
     user_exchange: str | None = None,
@@ -75,15 +86,27 @@ def run_full_analysis(
         }
 
         r = fundamental_result.ratios
+        normalized_ratios = {
+            "forward_pe": r.get("forward_pe"),
+            "debt_to_equity": r.get("debt_to_equity"),
+            "current_ratio": r.get("current_ratio"),
+            "profit_margin": r.get("profit_margin"),
+            "operating_margin": r.get("operating_margin"),
+            "free_cash_flow": r.get("free_cash_flow"),
+        }
+        for key, raw_value in normalized_ratios.items():
+            if _is_unavailable_metric(key, raw_value):
+                normalized_ratios[key] = "N/A"
+
         summary_lines = [
             f"Ticker: {ticker}",
             f"Company: {info.get('shortName') or info.get('longName') or ''}",
-            f"Forward P/E: {r.get('forward_pe', 'N/A')}",
-            f"Debt/Equity: {r.get('debt_to_equity', 'N/A')}",
-            f"Current Ratio: {r.get('current_ratio', 'N/A')}",
-            f"Profit Margin: {r.get('profit_margin', 'N/A')}",
-            f"Operating Margin: {r.get('operating_margin', 'N/A')}",
-            f"Free Cash Flow: {r.get('free_cash_flow', 'N/A')}",
+            f"Forward P/E: {normalized_ratios.get('forward_pe', 'N/A')}",
+            f"Debt/Equity: {normalized_ratios.get('debt_to_equity', 'N/A')}",
+            f"Current Ratio: {normalized_ratios.get('current_ratio', 'N/A')}",
+            f"Profit Margin: {normalized_ratios.get('profit_margin', 'N/A')}",
+            f"Operating Margin: {normalized_ratios.get('operating_margin', 'N/A')}",
+            f"Free Cash Flow: {normalized_ratios.get('free_cash_flow', 'N/A')}",
         ]
 
         required_keys = (
@@ -94,7 +117,9 @@ def run_full_analysis(
             "operating_margin",
             "free_cash_flow",
         )
-        missing_keys = [key for key in required_keys if r.get(key) in (None, "N/A")]
+        missing_keys = [
+            key for key in required_keys if _is_unavailable_metric(key, normalized_ratios.get(key))
+        ]
 
         fundamentals_text = "\n".join(str(line) for line in summary_lines)
         if missing_keys:
@@ -103,8 +128,9 @@ def run_full_analysis(
                 "Missing or N/A metrics:",
                 *[f"- {key}" for key in missing_keys],
                 "",
-                "When forming your audit, focus on the metrics that are present "
-                "and then clearly note the impact of any missing metrics listed above.",
+                "When forming your audit, use only the metrics that are present.",
+                "Treat all missing or N/A metrics above as unavailable data and do not",
+                "infer negative business performance from those gaps.",
             ]
             fundamentals_text = "\n".join([fundamentals_text, *missing_lines])
 
