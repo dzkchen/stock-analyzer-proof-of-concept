@@ -16,8 +16,7 @@ The project now supports two interfaces:
 **NOTE: THIS IS A PROTOTYPE MEANT FOR AN APPLICATION, IN NO WAYS IS IT A COMPLETE OR FLESHED OUT PROJECT BUT RATHER A PROOF OF CONCEPT.**
 
 ![Project Image 1](images/Screenshot_One.png) ![Project Image 2](images/Screenshot_Two.png)
-![Project Image 3](images/Screenshot_Three.png) ![Project Image 4](images/Screenshot_Four.png)
-![Project Image 5](images/Screenshot_Five.png)
+![Project Image 3](images/Screenshot_Three.png) 
 
 ### Main features
 
@@ -29,7 +28,7 @@ The project now supports two interfaces:
 
 ### Demo
 
-`[INSERT DEMO LINK HERE]`
+[Demo Video](https://drive.google.com/file/d/1Kc2UD02eIR0hGFIuV4ZXV0GJMQQk9KEh/view?usp=drive_link)
 
 ### How to run it yourself
 
@@ -108,6 +107,7 @@ For full integration into apps such as Wealthsimple, it should be positioned as 
     - Fine tune how the scoring works, adding more factors to take into consideration for equation
     - Not use Streamlit (Django or Flask in the future)
     - Error with certain stocks like POW (doesn't actually look at the stock...)
+    - HF_Token usage (no more rate limiting pls)
 - Add:
     - Options Data + Earnings suprises for trends
     - More graphs !!!
