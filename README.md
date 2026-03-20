@@ -15,8 +15,7 @@ The project now supports two interfaces:
 
 **NOTE: THIS IS A PROTOTYPE MEANT FOR AN APPLICATION, IN NO WAYS IS IT A COMPLETE OR FLESHED OUT PROJECT BUT RATHER A PROOF OF CONCEPT.**
 
-![Project Image 1](images/Screenshot_One.png) ![Project Image 2](images/Screenshot_Two.png)
-![Project Image 3](images/Screenshot_Three.png) 
+![Project Image 1](images/chrome_extension_view.png)
 
 ### Main features
 
@@ -28,7 +27,17 @@ The project now supports two interfaces:
 
 ### Demo
 
-[Demo Video](https://drive.google.com/file/d/1Kc2UD02eIR0hGFIuV4ZXV0GJMQQk9KEh/view?usp=drive_link)
+**Chrome extension**
+
+<video src="images/chromextension_demo.mp4" controls width="100%"></video>
+
+[Download `chromextension_demo.mp4`](images/chromextension_demo.mp4)
+
+**Streamlit**
+
+<video src="images/streamlit_demo.mp4" controls width="100%"></video>
+
+[Download `streamlit_demo.mp4`](images/streamlit_demo.mp4)
 
 ### How to run it yourself
 
