@@ -27,17 +27,8 @@ The project now supports two interfaces:
 
 ### Demo
 
-**Chrome extension**
-
-<video src="images/chromextension_demo.mp4" controls width="100%"></video>
-
-[Download `chromextension_demo.mp4`](images/chromextension_demo.mp4)
-
-**Streamlit**
-
-<video src="images/streamlit_demo.mp4" controls width="100%"></video>
-
-[Download `streamlit_demo.mp4`](images/streamlit_demo.mp4)
+- **Chrome extension** — [Demo video (Google Drive)](https://drive.google.com/file/d/1ycOiLT8wyI3wJ9KmxLETN0Z1sHFXKF7c/view?usp=drive_link)
+- **Streamlit** — [Demo video (Google Drive)](https://drive.google.com/file/d/1LL_yvjtx9mHEtB88KVigfsCgzYOP5B9I/view?usp=drive_link)
 
 ### How to run it yourself
 
