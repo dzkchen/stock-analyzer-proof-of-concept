@@ -34,7 +34,7 @@ The project now supports two interfaces:
 
 1. **Clone and create a virtual environment**
    ```bash
-   git clone <this-repo-url>
+   git clone https://github.com/dzkchen/stock-analyzer-proof-of-concept
    cd stock-analyzer
    python -m venv .venv
    source .venv/bin/activate  # Windows: .venv\Scripts\activate
