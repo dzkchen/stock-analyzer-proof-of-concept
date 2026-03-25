@@ -1,128 +1,143 @@
-AI Stock Analyzer Proof of Concept
-=================
+<p align="center">
+  <img src="images/chrome_extension_view.png" alt="Stock Analyzer Preview" width="700"/>
+</p>
 
-### What this project does
+<h1 align="center">AI Stock Analyzer</h1>
 
-This project analyzes a stock using:
-- quantitative technical indicators,
-- fundamental balance‑sheet and valuation metrics, and
-- qualitative sentiment from Reddit and financial news,
-into a single composite score for any stock ticker. It also generates LLM‑powered summaries for sentiment and fundamentals to explain the numbers.
+<p align="center">
+  <em>A proof-of-concept composite scoring engine for stocks, blending technicals, fundamentals, and sentiment.</em>
+</p>
 
-The project now supports two interfaces:
-- **Streamlit app** (`app.py`) for standalone analysis.
-- **Chrome side panel extension** (`extension/`) that reads the active stock page ticker and displays analysis by calling the local API (`api/server.py`).
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10+-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white" alt="Chrome Extension">
+  <img src="https://img.shields.io/badge/Gemini-LLM-8E75B2?logo=googlegemini&logoColor=white" alt="Gemini">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+</p>
 
-**NOTE: THIS IS A PROTOTYPE MEANT FOR AN APPLICATION, IN NO WAYS IS IT A COMPLETE OR FLESHED OUT PROJECT BUT RATHER A PROOF OF CONCEPT.**
+> This is a prototype/proof of concep: not a complete product. 
 
-![Project Image 1](images/chrome_extension_view.png)
+---
 
-### Main features
+## Features
 
-- Composite AI Score (0–100) – A single score blending technical strength, fundamental health, news sentiment, and Reddit sentiment (40% / 30% / 20% / 10%), with a gauge and breakdown in the UI.
-- Price and sentiment chart – Last 30 days of closing price plus a bar chart of the current component scores (Technical, Fundamental, News, Reddit, Overall).
-- Market sentiment summary – One-paragraph LLM summary of why Reddit and news are talking about the ticker the way they are.
-- Fundamental audit – Key ratios (P/E, debt‑to‑equity, current ratio, margins, free cash flow), snapshot stats (market cap, 52W high/low, volume), and a one-paragraph LLM “auditor” take on balance sheet health and valuation risk.
-- Raw feeds – Links to the top Reddit threads and news articles used in the analysis so you can dig deeper.
+| Feature | Description |
+|---|---|
+| **Composite AI Score** | Single 0–100 score blending Technical (40%), Fundamental (30%), News (20%), Reddit (10%) with gauge & breakdown |
+| **Price & Sentiment Chart** | 30-day closing price + component score bar chart |
+| **Market Sentiment Summary** | LLM-generated paragraph explaining Reddit & news sentiment |
+| **Fundamental Audit** | Key ratios (P/E, D/E, current ratio, margins, FCF), snapshot stats, and LLM analysis |
+| **Raw Feeds** | Links to top Reddit threads and news articles used in analysis |
 
-### Demo
+## Demo
 
-- **Chrome extension** — [Demo video (Google Drive)](https://drive.google.com/file/d/1ycOiLT8wyI3wJ9KmxLETN0Z1sHFXKF7c/view?usp=drive_link)
-- **Streamlit** — [Demo video (Google Drive)](https://drive.google.com/file/d/1LL_yvjtx9mHEtB88KVigfsCgzYOP5B9I/view?usp=drive_link)
+- **Chrome Extension** — [Watch demo (Google Drive)](https://drive.google.com/file/d/1ycOiLT8wyI3wJ9KmxLETN0Z1sHFXKF7c/view?usp=drive_link)
+- **Streamlit App** — [Watch demo (Google Drive)](https://drive.google.com/file/d/1LL_yvjtx9mHEtB88KVigfsCgzYOP5B9I/view?usp=drive_link)
 
-### How to run it yourself
+---
 
-1. **Clone and create a virtual environment**
-   ```bash
-   git clone https://github.com/dzkchen/stock-analyzer-proof-of-concept
-   cd stock-analyzer
-   python -m venv .venv
-   source .venv/bin/activate  # Windows: .venv\Scripts\activate
-   ```
+## Getting Started
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Prerequisites
 
-3. **Create `.env` at the project root**
-   ```env
-   GEMINI_API_KEY=""
-   NEWS_API_KEY=""
-   ```
+- Python 3.10+
+- [Gemini API key](https://ai.google.dev/)
+- [NewsAPI key](https://newsapi.org/)
 
-4. **Run the local API** (needed for the extension)
-   ```bash
-   uvicorn api.server:app --reload --port 8000
-   ```
+### Installation
 
-5. **Run the Streamlit app (optional standalone UI)**
-   ```bash
-   streamlit run app.py
-   ```
+```bash
+git clone https://github.com/dzkchen/stock-analyzer-proof-of-concept
+cd stock-analyzer-proof-of-concept
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-### Chrome extension side panel
+### Configuration
 
-1. Open Chrome and go to `chrome://extensions`.
-2. Enable Developer mode.
-3. Click Load unpacked and select the `extension/` folder.
-4. Open a stock page (tested only on Wealthsimple).
-5. Open the extension side panel and click **Refresh**.
+Create a `.env` file at the project root:
 
-The extension will:
-- detect the ticker from the active tab (with manual override available),
-- call `http://localhost:8000/analyze`,
-- render AI score breakdown, sentiment summary, fundamental audit, and source links.
+```env
+GEMINI_API_KEY=""
+NEWS_API_KEY=""
+```
 
-### Important disclaimer
+### Run
 
-This is an educational research prototype. It does not provide investment advice and does not execute trades.
+```bash
+uvicorn api.server:app --reload --port 8000
 
-### What I considered
+streamlit run app.py
+```
 
-- **Financial perspective**
-  - Technicals:
-    - Momentum and trend (RSI, MACD, SMA‑20/50).
-    - Volatility and price position (Bollinger Bands).
-    - Short‑term buying pressure (VWAP).
-  - Fundamentals:
-    - Liquidity (current ratio).
-    - Leverage (debt‑to‑equity).
-    - Profitability (profit and operating margins).
-    - Valuation (forward P/E) and cash generation (free cash flow).
-  - Sentiment:
-    - News and Reddit sentiment scores (separate).
+---
 
-### Integration with trading apps (e.g. Wealthsimple)
+## Chrome Extension Setup
 
-This project is built as a standalone research and education tool, not as a replacement for a broker. It fits alongside apps like **Wealthsimple**, **Questrade**, or **Robinhood**.
+1. Navigate to `chrome://extensions` and enable Developer mode.
+2. Click Load unpacked -> select the `extension/` folder.
+3. Open a stock page (tested on Wealthsimple).
+4. Open the side panel and click Refresh.
 
-For deeper integration into apps like Wealthsimple, this should be positioned as a companion analytics layer that reduces context switching and improves retention, while staying educational (not advisory). A reasonable rollout would be to offer it to premium tiers first.
+The extension will detect the ticker from the active tab (manual override available), call `localhost:8000/analyze`, and render the full analysis.
 
-### Next steps
+---
 
-- Fix:
-    - Using Reddit Dev feature directly rather than json requests, this way I stop getting rate limited (currently waiting approval)
-    - Fine tune how the scoring works, adding more factors to take into consideration for equation
-    - Not use Streamlit (Django or Flask in the future)
-    - Fix edge cases for some symbols (e.g., POW).
-    - Improve token/rate-limit handling (HF_Token).
-- Add:
-    - Options Data + Earnings suprises for trends
-    - More graphs !!!
-    - Portfolio mode: User connects to their investment portfolio using snaptrades api and can view multiple stocks side by side
-    - Learning: Users can have scenario prompts, like how would a rate cut affect this stock, via Gemini
+## About the Project
 
-### Tech stack
+<details>
+<summary><strong>Technical Indicators</strong></summary>
 
-- Language: Python
-- UI: Streamlit
-- Extension UI: Chrome Extension (Manifest V3, HTML/CSS/JS)
-- Local API: FastAPI + Uvicorn
-- Market Data: yfinance
-- Technical Indicators: Pandas Ta
-- Social Data: Reddit JSON requests
-- News Data: NewsAPI
-- Sentiment Analysis: FinBERT
-- LLM: Gemini SDK
-- Charts: Plotly
+- Momentum & trend — RSI, MACD, SMA-20/50
+- Volatility & price position — Bollinger Bands
+- Short-term buying pressure — VWAP
+</details>
+
+<details>
+<summary><strong>Fundamental Metrics</strong></summary>
+
+- Liquidity — current ratio
+- Leverage — debt-to-equity
+- Profitability — profit & operating margins
+- Valuation — forward P/E, free cash flow
+</details>
+
+<details>
+<summary><strong>Sentiment Sources</strong></summary>
+
+- News sentiment via NewsAPI + FinBERT
+- Reddit sentiment via JSON requests + FinBERT
+</details>
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python |
+| Web UI | Streamlit |
+| Extension UI | Chrome Extension (Manifest V3) |
+| API | FastAPI + Uvicorn |
+| Market Data | yfinance |
+| Technical Indicators | pandas-ta |
+| Social Data | Reddit JSON |
+| News Data | NewsAPI |
+| Sentiment Model | FinBERT |
+| LLM | Gemini SDK |
+| Charts | Plotly |
+
+---
+
+## Roadmap
+
+- Switch Reddit scraping to official API (pending approval)
+- Fine-tune composite scoring weights & add more factors
+- Migrate UI from Streamlit to Flask / Django
+- Fix edge cases for certain symbols (e.g., POW)
+- Add options data & earnings surprises
+- Portfolio mode via SnapTrade API
+- Scenario learning prompts via Gemini
